@@ -28,8 +28,7 @@ auto-report-generator/
 
 1. Clona el repositorio:
 ```bash
-git clone https://github.com/tu-usuario/auto-report-generator.git
-cd auto-report-generator
+git clone https://github.com/aisamai-cpu/auto-report-generator.gitcd auto-report-generator
 ```
 
 2. Crea y activa el entorno virtual:
@@ -68,4 +67,4 @@ El reporte PDF incluye:
 - Tabla detallada de ventas
 
 ---
-Desarrollado por [Aarón Isama]
+Desarrollado por Aarón Isama
