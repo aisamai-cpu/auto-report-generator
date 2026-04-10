@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import threading
 import os
+import pandas as pd
 from modules.lector import detectar_tabla, cargar_con_mapeo, resumen_general, ventas_por_mes, ventas_por_producto
 from modules.graficas import grafica_ventas_por_mes, grafica_ventas_por_producto
 from modules.generador import generar_reporte
@@ -17,7 +18,7 @@ class App:
         self.root.geometry("500x420")
         self.root.resizable(False, False)
         self.root.configure(bg="#f0f4f8")
-        self.archivo = None
+        self.archivos = []
         self.df_raw = None
         self.columnas = []
         self.mapeo_vars = {}
@@ -28,12 +29,12 @@ class App:
                  pady=15).pack(fill="x")
 
         # Subtitulo
-        tk.Label(root, text="Selecciona tu archivo de ventas (.csv o .xlsx)",
+        tk.Label(root, text="Selecciona uno o varios archivos de ventas (.csv o .xlsx)",
                  font=("Helvetica", 10), bg="#f0f4f8", fg="#444",
                  pady=8).pack()
 
         # Boton seleccionar archivo
-        tk.Button(root, text="📂  Seleccionar archivo de ventas",
+        tk.Button(root, text="📂  Seleccionar archivo(s) de ventas",
                   font=("Helvetica", 11), bg="#2E86AB", fg="white",
                   padx=10, pady=8, relief="flat", cursor="hand2",
                   command=self.seleccionar_archivo).pack(pady=5)
@@ -60,17 +61,18 @@ class App:
         self.label_estado.pack()
 
     def seleccionar_archivo(self):
-        ruta = filedialog.askopenfilename(
-            title="Seleccionar archivo de ventas",
+        rutas = filedialog.askopenfilenames(
+            title="Seleccionar archivos de ventas",
             filetypes=[("Archivos CSV y Excel", "*.csv *.xlsx *.xls")]
         )
-        if ruta:
-            self.archivo = ruta
-            nombre = os.path.basename(ruta)
-            self.label_archivo.config(text=f"✅ {nombre}", fg="#27ae60")
+        if rutas:
+            self.archivos = list(rutas)
+            nombres = [os.path.basename(r) for r in rutas]
+            self.label_archivo.config(
+                text=f"✅ {len(rutas)} archivo(s): {', '.join(nombres)}", fg="#27ae60")
             try:
-                from modules.lector import detectar_tabla
-                self.df_raw = detectar_tabla(ruta)
+                dfs = [detectar_tabla(r) for r in rutas]
+                self.df_raw = pd.concat(dfs, ignore_index=True)
                 self.columnas = list(self.df_raw.columns)
                 self.mostrar_mapeo()
             except Exception as e:
@@ -99,7 +101,6 @@ class App:
                      anchor="w").grid(row=i, column=0, sticky="w", pady=2)
 
             var = tk.StringVar()
-            # Intentar autodetectar
             for col in self.columnas:
                 if campo in col.lower():
                     var.set(col)
